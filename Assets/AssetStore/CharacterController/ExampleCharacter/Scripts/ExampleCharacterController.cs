@@ -71,6 +71,10 @@ namespace KinematicCharacterController.Examples
         public Transform CameraFollowPoint;
         public float CrouchedCapsuleHeight = 1f;
 
+        [Header("Sound Emitter")]
+        public float landingSoundRadius = 7f;
+        public LayerMask npcLayer;
+
         public CharacterState CurrentCharacterState { get; private set; }
 
         private Collider[] _probedColliders = new Collider[8];
@@ -503,6 +507,34 @@ namespace KinematicCharacterController.Examples
 
         protected void OnLanded()
         {
+            Debug.Log("Jogador ATERRISSOU! Tentando alertar NPCs. Posição: " + transform.position + ", Raio do Som: " + landingSoundRadius);
+            if (NPCManager.Instance != null)
+            {
+                // Reporta o som como não agressivo
+                NPCManager.Instance.ReportStimulus(transform.position, landingSoundRadius, false);
+            }
+            else
+            {
+                Debug.LogWarning("NPCManager.Instance é nulo. Não é possível reportar o som.");
+            }
+            
+            Collider[] hitColliders = Physics.OverlapSphere(transform.position, landingSoundRadius, npcLayer);
+            Debug.Log("Encontrados " + hitColliders.Length + " colisores na layer de NPC (" + LayerMask.LayerToName(npcLayer) + ") dentro do raio do som.");
+
+            foreach (var hitCollider in hitColliders)
+            {
+                Debug.Log("Colisor detectado: " + hitCollider.gameObject.name);
+                NPCs npc = hitCollider.GetComponent<NPCs>();
+                if (npc != null)
+                {
+                    Debug.Log("Notificando NPC: " + npc.gameObject.name + " sobre o som da aterrissagem em " + transform.position);
+                    npc.HearSoundStimulus(transform.position);
+                }
+                else
+                {
+                    Debug.LogWarning("Colisor " + hitCollider.gameObject.name + " NÃO possui o componente NPCs.");
+                }
+            }
         }
 
         protected void OnLeaveStableGround()
