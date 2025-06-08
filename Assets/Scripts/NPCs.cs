@@ -17,9 +17,9 @@ public class NPCs : MonoBehaviour
 
     [Header("Configuração do NPC")]
     public NPCState currentState = NPCState.Idle; // Estado atual da máquina de estados do NPC.
-    public float walkSpeed = 2f; // Velocidade normal de caminhada do NPC.
-    public float cautiousSpeed = 1.5f; // Velocidade do NPC ao realizar uma busca cautelosa.
-    public float alertSpeed = 4f; // Velocidade do NPC em estado de alerta ou busca agressiva.
+    public float walkSpeed = 4f; // Velocidade normal de caminhada do NPC.
+    public float cautiousSpeed = 2f; // Velocidade do NPC ao realizar uma busca cautelosa.
+    public float alertSpeed = 8f; // Velocidade do NPC em estado de alerta ou busca agressiva.
     public float sightRange = 10f; // Distância máxima em que o NPC pode ver o jogador.
     public float hearingRange = 15f; // Distância máxima em que o NPC pode ouvir estímulos sonoros.
     [Tooltip("Tempo em segundos para a fase 2 da busca agressiva")]
@@ -304,12 +304,12 @@ public class NPCs : MonoBehaviour
         Debug.Log(gameObject.name + " - Distância para o som: " + distanceToSound + ", Alcance de Audição: " + hearingRange);
         if (distanceToSound <= hearingRange)
         {
-            Debug.Log(gameObject.name + " está DENTRO do alcance de audição. Recebendo estímulo.");
+            Debug.Log(gameObject.name + " está dentro do alcance de audição. Recebendo estímulo.");
             ReceiveStimulus(soundPosition, false);
         }
         else
         {
-            Debug.Log(gameObject.name + " está FORA do alcance de audição.");
+            Debug.Log(gameObject.name + " está fora do alcance de audição.");
         }
     }
 
@@ -350,27 +350,27 @@ public class NPCs : MonoBehaviour
                 break;
             case NPCState.Patrolling:
                 currentActionText = "Patrulhando";
-                if (agent.pathPending) currentActionText += " (Calculando...)";
+                if (agent.pathPending) currentActionText += " (Calculando)";
                 else if (agent.hasPath) currentActionText += " (Andando)";
                 break;
             case NPCState.CautiousSearch:
                 currentActionText = "Investigando";
-                if (agent.pathPending) currentActionText += " (Calculando...)";
+                if (agent.pathPending) currentActionText += " (Calculando)";
                 else if (agent.hasPath) currentActionText += " (Movendo)";
                 break;
             case NPCState.AggressiveSearchPhase1:
                 currentActionText = "Alerta!";
-                if (agent.pathPending) currentActionText += " (Calculando...)";
+                if (agent.pathPending) currentActionText += " (Calculando)";
                 else if (agent.hasPath) currentActionText += " (Correndo)";
                 break;
             case NPCState.AggressiveSearchPhase2:
                 currentActionText = "Busca Ativa!";
-                if (agent.pathPending) currentActionText += " (Calculando...)";
+                if (agent.pathPending) currentActionText += " (Calculando)";
                 else if (agent.hasPath) currentActionText += " (Procurando)";
                 break;
             case NPCState.ReturningToRoutine:
                 currentActionText = "Retornando";
-                if (agent.pathPending) currentActionText += " (Calculando...)";
+                if (agent.pathPending) currentActionText += " (Calculando)";
                 else if (agent.hasPath) currentActionText += " (Andando)";
                 break;
         }

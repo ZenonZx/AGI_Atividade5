@@ -1465,9 +1465,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   currentState: 0
-  walkSpeed: 2
-  cautiousSpeed: 1.5
-  alertSpeed: 4
+  walkSpeed: 4
+  cautiousSpeed: 2
+  alertSpeed: 8
   sightRange: 10
   hearingRange: 15
   aggressiveSearchPhase2Duration: 10
@@ -1767,9 +1767,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   currentState: 0
-  walkSpeed: 2
-  cautiousSpeed: 1.5
-  alertSpeed: 4
+  walkSpeed: 4
+  cautiousSpeed: 2
+  alertSpeed: 8
   sightRange: 10
   hearingRange: 15
   aggressiveSearchPhase2Duration: 10
@@ -2705,9 +2705,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   currentState: 0
-  walkSpeed: 2
-  cautiousSpeed: 1.5
-  alertSpeed: 4
+  walkSpeed: 4
+  cautiousSpeed: 2
+  alertSpeed: 8
   sightRange: 10
   hearingRange: 15
   aggressiveSearchPhase2Duration: 10
@@ -2920,9 +2920,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   currentState: 0
-  walkSpeed: 2
-  cautiousSpeed: 1.5
-  alertSpeed: 4
+  walkSpeed: 4
+  cautiousSpeed: 2
+  alertSpeed: 8
   sightRange: 10
   hearingRange: 15
   aggressiveSearchPhase2Duration: 10
@@ -3344,9 +3344,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   currentState: 0
-  walkSpeed: 2
-  cautiousSpeed: 1.5
-  alertSpeed: 4
+  walkSpeed: 4
+  cautiousSpeed: 2
+  alertSpeed: 8
   sightRange: 10
   hearingRange: 15
   aggressiveSearchPhase2Duration: 10

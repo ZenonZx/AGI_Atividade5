@@ -507,7 +507,7 @@ namespace KinematicCharacterController.Examples
 
         protected void OnLanded()
         {
-            Debug.Log("Jogador ATERRISSOU! Tentando alertar NPCs. Posição: " + transform.position + ", Raio do Som: " + landingSoundRadius);
+            Debug.Log("Jogador aterrisou. Tentando alertar NPCs. Posição: " + transform.position + ", Raio do Som: " + landingSoundRadius);
             if (NPCManager.Instance != null)
             {
                 // Reporta o som como não agressivo
