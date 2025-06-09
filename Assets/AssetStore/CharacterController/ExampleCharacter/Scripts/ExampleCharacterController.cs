@@ -47,6 +47,7 @@ namespace KinematicCharacterController.Examples
         [SerializeField] private Animator animator;
         [Header("Stable Movement")]
         public float MaxStableMoveSpeed = 10f;
+        public float MaxStableCrouchedMoveSpeed = 5f;
         public float StableMovementSharpness = 15f;
         public float OrientationSharpness = 10f;
         public OrientationMethod OrientationMethod = OrientationMethod.TowardsCamera;
@@ -76,6 +77,7 @@ namespace KinematicCharacterController.Examples
         public LayerMask npcLayer;
 
         public CharacterState CurrentCharacterState { get; private set; }
+        public bool IsSilentWhileCrouching { get;  private set; } = false;
 
         private Collider[] _probedColliders = new Collider[8];
         private RaycastHit[] _probedHits = new RaycastHit[8];
@@ -191,6 +193,8 @@ namespace KinematicCharacterController.Examples
 
                                 _isCrouching = true;
                                 Motor.SetCapsuleDimensions(0.5f, CrouchedCapsuleHeight, CrouchedCapsuleHeight * 0.5f);
+                                IsSilentWhileCrouching = true;
+
                             }
                         }
                         else if (inputs.CrouchUp)
@@ -304,7 +308,8 @@ namespace KinematicCharacterController.Examples
                             // Calculate target velocity
                             Vector3 inputRight = Vector3.Cross(_moveInputVector, Motor.CharacterUp);
                             Vector3 reorientedInput = Vector3.Cross(effectiveGroundNormal, inputRight).normalized * _moveInputVector.magnitude;
-                            Vector3 targetMovementVelocity = reorientedInput * MaxStableMoveSpeed;
+                            float currentMaxSpeed = _isCrouching ? MaxStableCrouchedMoveSpeed : MaxStableMoveSpeed;
+                            Vector3 targetMovementVelocity = reorientedInput * currentMaxSpeed;
 
                             // Smooth movement Velocity
                             currentVelocity = Vector3.Lerp(currentVelocity, targetMovementVelocity, 1f - Mathf.Exp(-StableMovementSharpness * deltaTime));
@@ -452,6 +457,7 @@ namespace KinematicCharacterController.Examples
                             {
                                 // If no obstructions, uncrouch
                                 _isCrouching = false;
+                                IsSilentWhileCrouching = false;
                             }
                         }
                         break;
@@ -514,33 +520,40 @@ namespace KinematicCharacterController.Examples
         protected void OnLanded()
         {
             animator.SetTrigger("Land");
-            Debug.Log("Jogador aterrisou. Tentando alertar NPCs. Posição: " + transform.position + ", Raio do Som: " + landingSoundRadius);
-            if (NPCManager.Instance != null)
-            {
-                // Reporta o som como não agressivo
-                NPCManager.Instance.ReportStimulus(transform.position, landingSoundRadius, false);
-            }
-            else
-            {
-                Debug.LogWarning("NPCManager.Instance é nulo. Não é possível reportar o som.");
-            }
-            
-            Collider[] hitColliders = Physics.OverlapSphere(transform.position, landingSoundRadius, npcLayer);
-            Debug.Log("Encontrados " + hitColliders.Length + " colisores na layer de NPC (" + LayerMask.LayerToName(npcLayer) + ") dentro do raio do som.");
 
-            foreach (var hitCollider in hitColliders)
+            if (!_isCrouching)
             {
-                Debug.Log("Colisor detectado: " + hitCollider.gameObject.name);
-                NPCs npc = hitCollider.GetComponent<NPCs>();
-                if (npc != null)
+                Debug.Log("Jogador aterrisou em pé. Tentando alertar NPCs. Posição: " + transform.position + ", Raio do Som: " + landingSoundRadius);
+                if (NPCManager.Instance != null)
                 {
-                    Debug.Log("Notificando NPC: " + npc.gameObject.name + " sobre o som da aterrissagem em " + transform.position);
-                    npc.HearSoundStimulus(transform.position);
+                    NPCManager.Instance.ReportStimulus(transform.position, landingSoundRadius, false);
                 }
                 else
                 {
-                    Debug.LogWarning("Colisor " + hitCollider.gameObject.name + " NÃO possui o componente NPCs.");
+                    Debug.LogWarning("NPCManager.Instance é nulo. Não é possível reportar o som.");
                 }
+                
+                Collider[] hitColliders = Physics.OverlapSphere(transform.position, landingSoundRadius, npcLayer);
+                Debug.Log("Encontrados " + hitColliders.Length + " colisores na layer de NPC (" + LayerMask.LayerToName(npcLayer) + ") dentro do raio do som.");
+
+                foreach (var hitCollider in hitColliders)
+                {
+                    Debug.Log("Colisor detectado: " + hitCollider.gameObject.name);
+                    NPCs npc = hitCollider.GetComponent<NPCs>();
+                    if (npc != null)
+                    {
+                        Debug.Log("Notificando NPC: " + npc.gameObject.name + " sobre o som da aterrissagem em " + transform.position);
+                        npc.HearSoundStimulus(transform.position);
+                    }
+                    else
+                    {
+                        Debug.LogWarning("Colisor " + hitCollider.gameObject.name + " NÃO possui o componente NPCs.");
+                    }
+                }
+            }
+            else
+            {
+                Debug.Log("Jogador aterrisou agachado. Sem som de aterrissagem alto.");
             }
         }
 

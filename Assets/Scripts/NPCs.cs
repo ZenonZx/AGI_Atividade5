@@ -21,7 +21,11 @@ public class NPCs : MonoBehaviour
     public float cautiousSpeed = 2f; // Velocidade do NPC ao realizar uma busca cautelosa.
     public float alertSpeed = 8f; // Velocidade do NPC em estado de alerta ou busca agressiva.
     public float sightRange = 10f; // Distância máxima em que o NPC pode ver o jogador.
+    [Range(0, 360)]
+    public float fieldOfViewAngle = 90f; // Campo de visão angular do NPC.
+    public LayerMask visionBlockingLayers; // Camadas que devem bloquear a visão.
     public float hearingRange = 15f; // Distância máxima em que o NPC pode ouvir estímulos sonoros.
+    public float footstepsDetectionRadius = 3.5f; // Raio para detectar passos próximos do jogador não agachado.
     [Tooltip("Tempo em segundos para a fase 2 da busca agressiva")]
     public float aggressiveSearchPhase2Duration = 10f; // Duração da Fase 2 da busca agressiva.
     [Tooltip("Componente TextMesh para exibir o status/animação do NPC")]
@@ -39,6 +43,14 @@ public class NPCs : MonoBehaviour
     private Vector3 initialPosition;
 
     public Transform playerTransform; // Referência ao Transform do jogador.
+    private KinematicCharacterController.Examples.ExampleCharacterController playerController; // Referência ao controlador do jogador, se necessário.
+    private void Awake()
+    {
+        if (StatusText == null)
+        {
+            Debug.LogError("StatusText não atribuído no NPC " + gameObject.name);
+        }
+    }   
 
     void Start()
     {
@@ -68,6 +80,15 @@ public class NPCs : MonoBehaviour
             }
         }
 
+        if (playerTransform != null)
+        {
+            playerController = playerTransform.GetComponent<KinematicCharacterController.Examples.ExampleCharacterController>();
+            if (playerController == null)
+            {
+                Debug.LogWarning("NPCs: ExampleCharacterController não encontrado no playerTransform para " + gameObject.name);
+            }
+        }
+
         initialPosition = transform.position;
 
         if (patrolPoints != null && patrolPoints.Length > 0)
@@ -90,13 +111,41 @@ public class NPCs : MonoBehaviour
 
     void Update()
     {
-        if (playerTransform != null && CanSeePlayer())
-        {
-            ReceiveStimulus(playerTransform.position, true);
+        bool playerSeenThisFrame = false;
 
-            if (NPCManager.Instance != null)
+        if (playerTransform != null)
+        {
+            if (CanSeePlayer())
             {
-                NPCManager.Instance.ReportPlayerSightingByNPC(this, playerTransform.position);
+                playerSeenThisFrame = true;
+                ReceiveStimulus(playerTransform.position, true);
+
+                if (NPCManager.Instance != null)
+                {
+                    NPCManager.Instance.ReportPlayerSightingByNPC(this, playerTransform.position);
+                }
+            }
+            else if (playerController != null && !playerSeenThisFrame &&
+                     (currentState == NPCState.Idle || currentState == NPCState.Patrolling || currentState == NPCState.ReturningToRoutine || currentState == NPCState.CautiousSearch))
+            {
+                if (!playerController.IsSilentWhileCrouching)
+                {
+                    float distanceToPlayer = Vector3.Distance(transform.position, playerTransform.position);
+                    if (distanceToPlayer <= footstepsDetectionRadius)
+                    {
+                        bool shouldInvestigateFootsteps = true;
+                        if (currentState == NPCState.CautiousSearch && Vector3.Distance(stimulusPosition, playerTransform.position) < 1.0f)
+                        {
+                            shouldInvestigateFootsteps = false;
+                        }
+
+                        if (shouldInvestigateFootsteps)
+                        {
+                            Debug.Log(gameObject.name + " ouviu passos do jogador (não agachado) por proximidade em " + playerTransform.position);
+                            ReceiveStimulus(playerTransform.position, false);
+                        }
+                    }
+                }
             }
         }
 
@@ -318,25 +367,29 @@ public class NPCs : MonoBehaviour
         ReceiveStimulus(playerPos, true);
     }
 
-    bool CanSeePlayer()
-    {
-        if (playerTransform == null) return false;
+bool CanSeePlayer()
+{
+    if (playerTransform == null) return false;
 
-        float distanceToPlayer = Vector3.Distance(transform.position, playerTransform.position);
-        if (distanceToPlayer <= sightRange)
+    Vector3 npcEyePosition = transform.position + Vector3.up * 0.5f;
+    Vector3 directionToPlayerTarget = playerTransform.position - npcEyePosition;
+    float distanceToPlayer = directionToPlayerTarget.magnitude;
+
+    if (distanceToPlayer <= sightRange)
+    {
+        Vector3 directionToPlayerForAngleCheck = (playerTransform.position - transform.position).normalized;
+        float angleToPlayer = Vector3.Angle(transform.forward, directionToPlayerForAngleCheck);
+
+        if (angleToPlayer <= fieldOfViewAngle / 2f)
         {
-            Vector3 directionToPlayer = (playerTransform.position - transform.position).normalized;
-            RaycastHit hit;
-            if (Physics.Raycast(transform.position + Vector3.up * 0.5f, directionToPlayer, out hit, sightRange))
+            if (!Physics.Raycast(npcEyePosition, directionToPlayerTarget.normalized, distanceToPlayer, visionBlockingLayers))
             {
-                if (hit.collider.CompareTag("Player"))
-                {
-                    return true;
-                }
+                return true;
             }
         }
-        return false;
     }
+    return false;
+}
 
     void UpdateStatusText()
     {
