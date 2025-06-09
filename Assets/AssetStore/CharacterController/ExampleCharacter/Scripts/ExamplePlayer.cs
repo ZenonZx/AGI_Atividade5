@@ -10,7 +10,7 @@ namespace KinematicCharacterController.Examples
     {
         public ExampleCharacterController Character;
         public ExampleCharacterCamera CharacterCamera;
-
+        public Animator Animator;
         private const string MouseXInput = "Mouse X";
         private const string MouseYInput = "Mouse Y";
         private const string MouseScrollInput = "Mouse ScrollWheel";
@@ -91,7 +91,15 @@ namespace KinematicCharacterController.Examples
             characterInputs.JumpDown = Input.GetKeyDown(KeyCode.Space);
             characterInputs.CrouchDown = Input.GetKeyDown(KeyCode.C);
             characterInputs.CrouchUp = Input.GetKeyUp(KeyCode.C);
+            if (characterInputs.CrouchUp)
+            {
+                Animator.SetBool("Crouch", false);
+            }
 
+            if (characterInputs.CrouchDown)
+            {
+                Animator.SetBool("Crouch", true);
+            }
             // Apply inputs to character
             Character.SetInputs(ref characterInputs);
         }

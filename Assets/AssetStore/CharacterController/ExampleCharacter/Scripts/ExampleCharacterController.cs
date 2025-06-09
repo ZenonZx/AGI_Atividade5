@@ -44,6 +44,7 @@ namespace KinematicCharacterController.Examples
     {
         public KinematicCharacterMotor Motor;
 
+        [SerializeField] private Animator animator;
         [Header("Stable Movement")]
         public float MaxStableMoveSpeed = 10f;
         public float StableMovementSharpness = 15f;
@@ -67,7 +68,6 @@ namespace KinematicCharacterController.Examples
         public BonusOrientationMethod BonusOrientationMethod = BonusOrientationMethod.None;
         public float BonusOrientationSharpness = 10f;
         public Vector3 Gravity = new Vector3(0, -30f, 0);
-        public Transform MeshRoot;
         public Transform CameraFollowPoint;
         public float CrouchedCapsuleHeight = 1f;
 
@@ -97,7 +97,7 @@ namespace KinematicCharacterController.Examples
         {
             // Handle initial state
             TransitionToState(CharacterState.Default);
-
+            animator = GetComponentInChildren<Animator>();
             // Assign the characterController to the motor
             Motor.CharacterController = this;
         }
@@ -188,9 +188,9 @@ namespace KinematicCharacterController.Examples
 
                             if (!_isCrouching)
                             {
+
                                 _isCrouching = true;
                                 Motor.SetCapsuleDimensions(0.5f, CrouchedCapsuleHeight, CrouchedCapsuleHeight * 0.5f);
-                                MeshRoot.localScale = new Vector3(1f, 0.5f, 1f);
                             }
                         }
                         else if (inputs.CrouchUp)
@@ -291,6 +291,9 @@ namespace KinematicCharacterController.Examples
                         // Ground movement
                         if (Motor.GroundingStatus.IsStableOnGround)
                         {
+                            float speedPercent = currentVelocity.magnitude / MaxStableMoveSpeed;
+                            animator.SetFloat("Move", speedPercent);
+                            animator.SetBool("IsMoving", speedPercent == 0);
                             float currentVelocityMagnitude = currentVelocity.magnitude;
 
                             Vector3 effectiveGroundNormal = Motor.GroundingStatus.GroundNormal;
@@ -378,6 +381,7 @@ namespace KinematicCharacterController.Examples
                                 _jumpRequested = false;
                                 _jumpConsumed = true;
                                 _jumpedThisFrame = true;
+                                animator.SetTrigger("Jump");
                             }
                         }
 
@@ -429,6 +433,7 @@ namespace KinematicCharacterController.Examples
                         // Handle uncrouching
                         if (_isCrouching && !_shouldBeCrouching)
                         {
+
                             // Do an overlap test with the character's standing height to see if there are any obstructions
                             Motor.SetCapsuleDimensions(0.5f, 2f, 1f);
                             if (Motor.CharacterOverlap(
@@ -437,14 +442,17 @@ namespace KinematicCharacterController.Examples
                                 _probedColliders,
                                 Motor.CollidableLayers,
                                 QueryTriggerInteraction.Ignore) > 0)
+
                             {
                                 // If obstructions, just stick to crouching dimensions
                                 Motor.SetCapsuleDimensions(0.5f, CrouchedCapsuleHeight, CrouchedCapsuleHeight * 0.5f);
+                                animator.SetBool("Crounch", true);
+
                             }
                             else
                             {
+                                animator.SetBool("Crounch", false);
                                 // If no obstructions, uncrouch
-                                MeshRoot.localScale = new Vector3(1f, 1f, 1f);
                                 _isCrouching = false;
                             }
                         }
@@ -507,6 +515,7 @@ namespace KinematicCharacterController.Examples
 
         protected void OnLanded()
         {
+            animator.SetTrigger("Land");
             Debug.Log("Jogador aterrisou. Tentando alertar NPCs. Posição: " + transform.position + ", Raio do Som: " + landingSoundRadius);
             if (NPCManager.Instance != null)
             {
