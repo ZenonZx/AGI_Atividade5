@@ -349,27 +349,27 @@ public class NPCs : MonoBehaviour
                 currentActionText = "Parado";
                 break;
             case NPCState.Patrolling:
-                currentActionText = "Patrulhando";
+                currentActionText = "...";
                 if (agent.pathPending) currentActionText += " (Calculando)";
                 else if (agent.hasPath) currentActionText += " (Andando)";
                 break;
             case NPCState.CautiousSearch:
-                currentActionText = "Investigando";
+                currentActionText = "?";
                 if (agent.pathPending) currentActionText += " (Calculando)";
                 else if (agent.hasPath) currentActionText += " (Movendo)";
                 break;
             case NPCState.AggressiveSearchPhase1:
-                currentActionText = "Alerta!";
+                currentActionText = "!";
                 if (agent.pathPending) currentActionText += " (Calculando)";
                 else if (agent.hasPath) currentActionText += " (Correndo)";
                 break;
             case NPCState.AggressiveSearchPhase2:
-                currentActionText = "Busca Ativa!";
+                currentActionText = "?!";
                 if (agent.pathPending) currentActionText += " (Calculando)";
                 else if (agent.hasPath) currentActionText += " (Procurando)";
                 break;
             case NPCState.ReturningToRoutine:
-                currentActionText = "Retornando";
+                currentActionText = "?";
                 if (agent.pathPending) currentActionText += " (Calculando)";
                 else if (agent.hasPath) currentActionText += " (Andando)";
                 break;

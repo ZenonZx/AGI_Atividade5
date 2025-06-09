@@ -446,12 +446,10 @@ namespace KinematicCharacterController.Examples
                             {
                                 // If obstructions, just stick to crouching dimensions
                                 Motor.SetCapsuleDimensions(0.5f, CrouchedCapsuleHeight, CrouchedCapsuleHeight * 0.5f);
-                                animator.SetBool("Crounch", true);
 
                             }
                             else
                             {
-                                animator.SetBool("Crounch", false);
                                 // If no obstructions, uncrouch
                                 _isCrouching = false;
                             }
